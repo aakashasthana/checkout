@@ -29,6 +29,7 @@ use Nezasa\Checkout\Payments\Dtos\CaptureResult;
 use Nezasa\Checkout\Payments\Dtos\PaymentAsset;
 use Nezasa\Checkout\Payments\Dtos\PaymentPrepareData;
 use Nezasa\Checkout\Payments\Enums\TransactionStatusEnum;
+use Nezasa\Checkout\Payments\Gateways\Adyen\AdyenDropInGateway;
 use Nezasa\Checkout\Payments\Gateways\Computop\ComputopGateway;
 use Nezasa\Checkout\Payments\Gateways\Computop\ComputopTokenGateway;
 use Nezasa\Checkout\Payments\Gateways\Credit2000\Credit2000Gateway;
@@ -160,6 +161,7 @@ it('keeps the registered existing payment gateway contract surface unchanged', f
         ComputopGateway::class,
         ComputopTokenGateway::class,
         Credit2000Gateway::class,
+        AdyenDropInGateway::class,
     ]);
 
     foreach ($registeredGateways as $gateway) {
@@ -174,6 +176,7 @@ it('keeps the registered existing payment gateway contract surface unchanged', f
             'Computop',
             'Computop - Token',
             'Credit2000',
+            'Adyen',
         ])
         ->and(collect($registeredGateways)->map(fn (string $gateway): bool => $gateway::isTokenized())->all())->toBe([
             false,
@@ -182,6 +185,7 @@ it('keeps the registered existing payment gateway contract surface unchanged', f
             false,
             true,
             false,
+            false,   // Adyen
         ])
         ->and(is_subclass_of(OppwaWidgetGateway::class, WidgetPaymentContract::class))->toBeTrue()
         ->and(is_subclass_of(InvoiceGateway::class, RedirectPaymentContract::class))->toBeTrue()

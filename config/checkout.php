@@ -2,6 +2,7 @@
 
 use Nezasa\Checkout\Insurances\Providers\Ergo\ErgoInsurance;
 use Nezasa\Checkout\Insurances\Providers\HanseMerkur\HanseMerkurInsurance;
+use Nezasa\Checkout\Payments\Gateways\Adyen\AdyenDropInGateway;
 use Nezasa\Checkout\Payments\Gateways\Computop\ComputopGateway;
 use Nezasa\Checkout\Payments\Gateways\Computop\ComputopTokenGateway;
 use Nezasa\Checkout\Payments\Gateways\Credit2000\Credit2000Gateway;
@@ -110,6 +111,40 @@ return [
             'prepare_action_type' => env('CHECKOUT_CREDIT2000_PREPARE_ACTION_TYPE', '5'),
             'purchase_type' => env('CHECKOUT_CREDIT2000_PURCHASE_TYPE', '1'),
         ],
+        'adyen' => [
+            'active' => (bool) env('CHECKOUT_ADYEN_ACTIVE', false),
+            'name' => env('CHECKOUT_ADYEN_NAME', 'Adyen'),
+
+            // 'test' or 'live'. Drives the server base URL and the browser environment.
+            'environment' => env('CHECKOUT_ADYEN_ENVIRONMENT', 'test'),
+
+            // Live URLs carry a prefix unique to the company account:
+            // https://{PREFIX}-checkout-live.adyenpayments.com/checkout
+            'base_url' => env('CHECKOUT_ADYEN_BASE_URL', 'https://checkout-test.adyen.com'),
+
+            // v70 or later: earlier versions do not return the pspReference in the
+            // session result, which would make capture impossible without webhooks.
+            'api_version' => env('CHECKOUT_ADYEN_API_VERSION', 'v71'),
+
+            // Secret. Server side only, never sent to the browser.
+            'api_key' => env('CHECKOUT_ADYEN_API_KEY', 'must_be_set_in_env'),
+
+            // Public by design. Used by Drop-in; protected by the allowed origins list.
+            'client_key' => env('CHECKOUT_ADYEN_CLIENT_KEY', 'must_be_set_in_env'),
+
+            // Adyen Web version loaded in the browser.
+            'sdk_version' => env('CHECKOUT_ADYEN_SDK_VERSION', '6.45.0'),
+
+            // Currency to merchant account. Royal Jordanian settles EUR and USD into
+            // separate accounts, so the account is chosen per payment by currency.
+            // No default: an unmapped currency must fail rather than pay into the
+            // wrong account.
+            'merchant_accounts' => [
+                'EUR' => env('CHECKOUT_ADYEN_MERCHANT_ACCOUNT_EUR', 'must_be_set_in_env'),
+                'USD' => env('CHECKOUT_ADYEN_MERCHANT_ACCOUNT_USD', 'must_be_set_in_env'),
+            ],
+        ],
+
         'passolution' => [
             'active' => (bool) env('CHECKOUT_PASSOLUTION_ACTIVE', false),
             'base_url' => env('CHECKOUT_PASSOLUTION_BASE_URL', 'https://api.passolution.eu/api/v2'),
@@ -170,6 +205,7 @@ return [
         ComputopGateway::class,
         ComputopTokenGateway::class,
         Credit2000Gateway::class,
+        AdyenDropInGateway::class,
     ],
 
     'insurance_provider' => [
